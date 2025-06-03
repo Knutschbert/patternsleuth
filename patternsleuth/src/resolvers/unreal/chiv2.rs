@@ -1,14 +1,14 @@
-use std::fmt::Debug;
+use std::{collections::HashSet, fmt::Debug};
 
 use futures::future::join_all;
-use iced_x86::{Decoder, DecoderOptions, Instruction};
+use iced_x86::{Decoder, DecoderOptions, FlowControl, Instruction};
+use itertools::Itertools;
 use patternsleuth_scanner::Pattern;
 
 use crate::{
-    resolvers::{
-        bail_out, ensure_one, impl_resolver, impl_resolver_singleton, try_ensure_one, Result,
-    },
-    Addressable, Matchable, MemoryTrait,
+    disassemble::disassemble_single, resolvers::{
+        bail_out, ensure_one, impl_resolver, impl_resolver_singleton, try_ensure_one, unreal::util, Result
+    }, Addressable, Matchable, MemoryTrait
 };
 
 /// public: void __cdecl FFrame::Step(class UObject *, void *const)
@@ -248,6 +248,7 @@ impl_resolver_singleton!(all, ApproveLogin, |ctx| async {
 //     Ok(GetMotd(ensure_one(res.into_iter().flatten())?))
 // });
 
+
 /// public: void __cdecl FFrame::Step(class UObject *, void *const)
 #[derive(Debug, PartialEq)]
 #[cfg_attr(
@@ -256,14 +257,22 @@ impl_resolver_singleton!(all, ApproveLogin, |ctx| async {
 )]
 pub struct GetCurrentGames(pub usize);
 impl_resolver_singleton!(all, GetCurrentGames, |ctx| async {
-    let patterns = [
-        // "E8 ?? ?? ?? ?? 4C 39 38 74 34",
-        "E8 ?? ?? ?? ?? 4C 39 ?8 74 3?" // Universal
+let patterns = [
+        "E8 | ?? ?? ?? ?? 4C 39 ?8 74 3?" // Universal
     ];
 
     let res = join_all(patterns.iter().map(|p| ctx.scan(Pattern::new(p).unwrap()))).await;
-
-    Ok(GetCurrentGames(ensure_one(res.into_iter().flatten())?))
+    let val = try_ensure_one(
+        res.iter()
+            .flatten()
+            .map(|a| -> Result<usize> { Ok(ctx.image().memory.rip4(*a)?) })
+            // .chain(res1),
+    );
+    
+    Ok(GetCurrentGames(try_ensure_one(
+        res.iter()
+            .flatten()
+            .map(|a| -> Result<usize> { Ok(ctx.image().memory.rip4(*a)?) }))?))
 });
 
 /// public: void __cdecl FFrame::Step(class UObject *, void *const)
