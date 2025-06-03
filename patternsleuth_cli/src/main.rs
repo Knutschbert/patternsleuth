@@ -24,7 +24,6 @@ use patternsleuth::{scanner::Pattern, PatternConfig, Resolution};
 
 use std::fs::File;
 use std::io::{BufReader, Read};
-use crc32fast::Hasher;
 use std::io::{BufWriter, Write};
 
 use serde::Serialize;
@@ -41,21 +40,27 @@ enum Commands {
     AutoGen(CommandAutoGen),
 }
 
-fn crc32_from_file(path: &str) -> std::io::Result<u32> {
+// IEEE
+use std::arch::x86_64::_mm_crc32_u8;
+#[target_feature(enable = "sse4.2")]
+unsafe fn crc32_from_file(path: &str) -> std::io::Result<u32> {
     let file = File::open(path)?;
     let mut reader = BufReader::new(file);
-    let mut buffer = [0u8; 8192];
-    let mut hasher = Hasher::new();
+    let mut buffer = [0u8; 4096];
+    let mut crc: u32 = 0;
 
     loop {
         let bytes_read = reader.read(&mut buffer)?;
         if bytes_read == 0 {
             break;
         }
-        hasher.update(&buffer[..bytes_read]);
+
+        for &byte in &buffer[..bytes_read] {
+            crc = _mm_crc32_u8(crc, byte);
+        }
     }
 
-    Ok(hasher.finalize())
+    Ok(crc ^ 0xFFFFFFFF)
 }
 
 fn parse_maybe_hex(s: &str) -> Result<usize> {
@@ -580,7 +585,8 @@ fn scan(command: CommandScan) -> Result<()> {
         }
         // let crc32: u32 = 1937620090;   
 
-        let crc32 = crc32_from_file(&file_path).unwrap();
+        let crc32 = unsafe { crc32_from_file(&file_path) }.expect("Failed to compute CRC");
+        // let crc32 = crc32_from_file(&file_path).unwrap();
 
         
         let mut offsets = HashMap::new();

@@ -36,4 +36,3 @@ regex = "1.10.2"
 serde = "1.0.195"
 strum = {version = "0.25.0", features = ["strum_macros", "derive"]}
 windows = { version = "0.52.0" }
-crc32fast = "1.3"
