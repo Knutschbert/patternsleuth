@@ -126,7 +126,6 @@ mod resolvers {
 
 impl_try_collector! {
     #[derive(Debug, PartialEq, Clone)]
-    #[derive( serde::Serialize, serde::Deserialize)]
     struct DllHookResolution {
         gmalloc: GMalloc,
         guobject_array: GUObjectArray,
@@ -145,6 +144,25 @@ impl_try_collector! {
     }
 }
 
+use serde::{Serialize, Serializer, Deserialize, Deserializer};
+
+impl Serialize for DllHookResolution {
+    fn serialize<S>(&self, _serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        todo!("Serialization not implemented")
+    }
+}
+
+impl<'de> Deserialize<'de> for DllHookResolution {
+    fn deserialize<D>(_deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        todo!("Deserialization not implemented")
+    }
+}
 static mut GLOBALS: Option<Globals> = None;
 
 pub struct Globals {
