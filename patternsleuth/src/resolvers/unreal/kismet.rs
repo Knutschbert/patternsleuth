@@ -106,6 +106,25 @@ impl_resolver_singleton!(all, FFrameStep, |ctx| async {
     Ok(FFrameStep(ensure_one(res.into_iter().flatten())?))
 });
 
+
+// /// public: void __cdecl FFrame::Step(class UObject *, void *const)
+// #[derive(Debug, PartialEq)]
+// #[cfg_attr(
+//     feature = "serde-resolvers",
+//     derive(serde::Serialize, serde::Deserialize)
+// )]
+// pub struct GetNetMode(pub usize);
+// impl_resolver_singleton!(all, GetNetMode, |ctx| async {
+//     let patterns = [
+//         "40 53 48 81 EC 90 00 00 00 48 8B D9 48 8B 49 38 48 85 C9",
+//         "40 57 48 81 EC 90 00 00 00 48 8B F9 48 8B",
+//     ];
+
+//     let res = join_all(patterns.iter().map(|p| ctx.scan(Pattern::new(p).unwrap()))).await;
+
+//     Ok(GetNetMode(ensure_one(res.into_iter().flatten())?))
+// });
+
 /// public: void __cdecl FFrame::StepExplicitProperty(void *const, class FProperty *)
 /// public: void __cdecl FFrame::StepExplicitProperty(void *const, class UProperty *)
 #[derive(Debug, PartialEq)]
