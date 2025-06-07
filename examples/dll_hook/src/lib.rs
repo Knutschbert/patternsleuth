@@ -101,6 +101,7 @@ fn setup() -> Result<PathBuf> {
 }
 
 #[derive(Debug, PartialEq)]
+#[derive( serde::Serialize, serde::Deserialize)]
 pub struct FFrameKismetExecutionMessage(usize);
 
 mod resolvers {
@@ -118,10 +119,14 @@ mod resolvers {
         let res = join_all(patterns.iter().map(|p| ctx.scan(Pattern::new(p).unwrap()))).await;
         Ok(Self(ensure_one(res.into_iter().flatten())?))
     });
+    impl_resolver_singleton!(ElfImage, FFrameKismetExecutionMessage, |_ctx| async {
+        bail_out!("ElfImage unimplemented");
+    });
 }
 
 impl_try_collector! {
     #[derive(Debug, PartialEq, Clone)]
+    #[derive( serde::Serialize, serde::Deserialize)]
     struct DllHookResolution {
         gmalloc: GMalloc,
         guobject_array: GUObjectArray,

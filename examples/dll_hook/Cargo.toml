@@ -11,6 +11,7 @@ path = "src/lib.rs"
 crate-type = ["cdylib"]
 
 [dependencies]
+serde = "1.0.195"
 anyhow = { workspace = true }
 backtrace = "0.3.69"
 bitflags = "2.4.1"

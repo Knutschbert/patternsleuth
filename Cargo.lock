@@ -1152,6 +1152,7 @@ dependencies = [
  "patternsleuth",
  "regex",
  "retour",
+ "serde",
  "simple-log",
  "thread_local",
  "widestring",
